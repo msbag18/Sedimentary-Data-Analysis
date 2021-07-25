@@ -12,6 +12,6 @@ The raw data file I used consisted of duplicate meausurements of erodibility at 
 
 Data File 2: Locations - 
 The raw data file I used consisted of: 
-I. the geographical locations wherebu erodibility was measured in terms of northings(N) and eastings(E);
-II. The measured erosion rates at said locations(ER);
-III. Other factors that influence erodibility which in our case were topography(S), tree cover(t) and soil composition(clay, silt and sand).
+1. the geographical locations wherebu erodibility was measured in terms of northings(N) and eastings(E);
+2. The measured erosion rates at said locations(ER);
+3. Other factors that influence erodibility which in our case were topography(S), tree cover(t) and soil composition(clay, silt and sand).
