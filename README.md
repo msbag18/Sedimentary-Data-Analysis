@@ -8,10 +8,12 @@ The code attached in R Markdown files aim to analyse sedimentary data from n dif
 In order to reproduce this analysis, you would require a two data files:
 
 Data File 1: Erosion Rates 
+
 The raw data file I used consisted of duplicate meausurements of erodibility at each locations.
 
 
 Data File 2: Locations 
+
 The raw data file I used consisted of: 
 I. the geographical locations wherebu erodibility was measured in terms of northings(N) and eastings(E);
 II. The measured erosion rates at said locations(ER);
