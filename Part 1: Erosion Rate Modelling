@@ -1,0 +1,91 @@
+---
+title: "Part 1 - Erosion Rate Modelling"
+output: 
+  html_document: 
+    number_sections: true
+---
+# Section 1: Importing libraries and data 
+
+```{r}
+#Libraries
+library(geostats)
+library(MASS)
+
+#Data
+erosion_rates <- read.csv(file = "erosion_rates.csv" , header = TRUE)
+locations <- read.csv(file = "locations.csv", header = TRUE)
+```
+
+# Section 2: Visualising the data 
+## Subsection 1: Probability distribution of samples for first four samples
+```{r}
+i <- 1
+n = 4 #Number of sample that are to be visualized starting with sample 1
+x = n + 1 
+
+par(mfrow = c(2,2),mar=c(4,4,2,1))
+while (i < x) { 
+  m <- mean(erosion_rates[,i])#mean
+  s <- sdsamp1<- sd(erosion_rates[,i])
+  probsamp <- dnorm(0:200,m,s) #As data is continuous, probability distribution of erodibility is found using normal distribution
+  plot(probsamp, main = c("Sample",i), xlab = "Erodibility (mm/[yr.ha])",ylab = "Probability", type = "l")
+  rug(erosion_rates[,i])
+  i = i +1
+}
+```
+
+## Subsection 2: Boxplot
+```{r}
+par(mfrow = c(1,1),mar=c(4,4,1,1))
+sampname <- c(1:n(ncol(erosion_rates))
+names(erosion_rates)<- sampname
+boxplot(erosion_rates,xlab="Sample", ylab ="Erodibility (mm/[yr.ha])", horizontal = FALSE) #Individual boxplots for each sample as they are at different locations
+```
+
+# Section 3: Mean and standard error of Erodibility
+```{r}
+z = ncol(erosion_rates)
+y = z + 1
+Mean <- matrix(data = NA, nrow = ncol(erosion_rates), ncol = 1)
+SE <- matrix(data = NA, nrow = ncol(erosion_rates), ncol = 1) #Standard error in this case would be equal to standard deviation
+
+j <- 1
+while (j < y) {
+  Mean[j] = mean(erosion_rates[,j])
+  SE[j] <- sd(erosion_rates[,j])
+  j = j +1
+}
+```
+
+# Section 4: Estimating erosion rate
+```{r}
+S <- locations[,4]
+t <- locations[,5]
+ER <- matrix(data = NA, nrow = ncol(erosion_rates), ncol = 1)
+k <- 1 
+while (k < y) {
+  ER[k] <- (Mean[k]*S[k])/t[k]
+  k = k +1
+}
+```
+
+# Section 5: Propagating the uncertainty
+```{r}
+UE =  SE/Mean #Uncertainty in erodibility
+US <-  0.1 #Uncertainty in slope
+UT <- 0 #Assuming there is no uncertainty in calculating trees
+sER = sqrt((UE)^2 + (US)^2 + (UT)^2) * ER
+```
+
+# Section 6: Scatter Plot 
+```{r}
+par(mfrow = c(1,1),mar=c(4,4,1,1))
+plot(ER,sER, xlab = "Erosion rate (mm/yr)", ylab = "Uncertainty in erosion rate (mm/yr)", main = "Scatter plot of uncertainty of erosion rate against erosion rate")
+```
+
+# Section 7: Colour Plot of Erosion Rate as a function of location
+```{r}
+NS <- locations[,3]
+EW <- locations[,2]
+colourplot(X = EW, Y = NS, Z = ER, xlab= "Eastings", ylab= "Northings", main = "Erosion rate as a function location")
+```
