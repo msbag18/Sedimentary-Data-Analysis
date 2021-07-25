@@ -1,0 +1,113 @@
+# Section 1: Comparing statistical difference from distributions using Kolmogorov-Smirnov test
+````{r}
+#Choosing location of two data 
+L1 <- 1
+L2 <- 10
+
+#Visualizing the two distribution 
+qqplot(x=erosion_rates[,L1], y=erosion_rates[,L2], xlab = c("Sample", L1), ylab =c("Sample",L2))
+abline(0,1)
+
+#Quantitatively comparing the two samples 
+test1 <- ks.test(x=erosion_rates[,L1], y=erosion_rates[,L2])
+```
+
+# Section 2: Comparing distribution to normal distribution 
+```{r}
+#Normalising K values in the first sample
+#For k values in first sample
+S <- 1 #sample number chosen
+K <- (erosion_rates[,S] - Mean[S])/sd(erosion_rates[,S])
+
+#Visualising normalised data
+qqnorm(K)
+abline(0,1)
+
+#Comparing normalised data with a normal distribution 
+test2 <- ks.test(K, "pnorm")
+```
+
+# Section 3: Comparing distribution with a logarithmic normal distribution 
+```{r}
+#Log conversion
+log_erosion_rates <- log(erosion_rates[,S])
+
+#Normalising 
+mlog <- mean(log_erosion_rates)
+slog <- sd(log_erosion_rates)
+logK <- (log_erosion_rates - mlog)/slog
+
+#Visualizing normalised data
+qqnorm(logK)
+abline(0,1)
+
+#testing 
+test3 <- ks.test(logK, "pnorm")
+```
+
+# Section 4: Comparing estimated and measured rates
+```{r}
+#Estimated erosion rate is already calculated as E
+
+#Measured erosion rates
+mER <- locations$erosion[1:ncol(erosion_rates)]
+
+#Plotting
+plot(mER, ER, xlab = "Measured erosion rate (mm/yr)", ylab = "Estimated erosion rate (mm/yr)", main = "Comparing estimated and measured erosion rates at different locations" )
+```
+
+## Subsection 1: Correlation coefficient and t-test
+```{r}
+#correlation coefficient, cc
+r <- cor(mER, ER)
+
+#testing its statistical significance
+n <-  nrow(locations)
+t <- (r*sqrt(n-2))/(sqrt(1-(r^2)))
+
+#quantile distribution of t 
+q <- pt(q=t,df=n-1, lower.tail = FALSE) #df taken as n-1 because one reference data which was measured independently and one statistical data which involved estimation
+```
+
+## Subsection 2: Regression line through calcuated and measured erosion rates
+```{r}
+fit <- lm(ER~mER)
+
+#Plotting
+plot(mER, ER, xlab = "Measured erosion rate (mm/yr)", ylab = "Estimated erosion rate (mm/yr)", main = "Comparing estimated and measured erosion rates at different locations" )
+abline(fit) #line
+
+xce <- seq(from=min(mER), to=max(mER),length.out = 89)#confidence envelope
+yce <- predict(fit, newdata=data.frame(mER=xce), interval = "confidence", level = 0.95)
+matlines(xce,yce, lty=2, col = "black")
+yced <- predict(fit, newdata=data.frame(mER=xce), interval = "prediction", level = 0.95)
+matlines(xce,yced, lty=3, col = "black")
+```
+
+## Subsection 3: Logarithmic transformation for correlation, t-test and regression
+```{r}
+#Log conversion
+logE <- log(ER) #estimated 
+logmER <- log(mER) #measured
+
+#Plotting
+plot(logmER, logE, xlab = "Log of measured erosion rate", ylab = "Log of estimated erosion rate", main = "Comparing log of estimated and measured erosion rates")
+
+#correlation coefficient, cc
+logr <- cor(logmER, logE)
+
+#testing its statistical significance
+logt <- (logr*sqrt(n-2))/(sqrt(1-(logr^2)))
+
+#quantile distribution of t 
+qlogt <- pt(logt, df=(n-1), lower.tail = FALSE) #df taken as n-1 because one reference and one statistical data
+
+fitlog <- lm(logE~logmER)
+abline(fitlog) #line
+
+logxce <- seq(from=min(logmER), to=max(logmER),length.out = 89)#confidence enveloppe
+logyce <- predict(fitlog, newdata=data.frame(logmER=logxce), interval = "confidence", level = 0.95)
+matlines(logxce,logyce, lty=2, col = "black")
+logyced <- predict(fitlog, newdata=data.frame(logmER=logxce), interval = "prediction", level = 0.95)
+matlines(logxce,logyced, lty=3, col = "black")
+```
