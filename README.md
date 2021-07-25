@@ -2,8 +2,8 @@
 The code attached in R Markdown files aim to analyse sedimentary data from n different locations. This is done in three steps as has been broken down in the files:
 
 1. Initialising the raw data files with quick summary statistics;
-2. Understanding part 1 and classifying it into its corresponding data distribution type for more accurate analysis;
-3. Qunatitatively visualising the data and inference of the later into meaningful figures.
+2. Understanding part 1 and classifying the latter into its corresponding data distribution type for more accurate analysis;
+3. Quantitative visualisation the data and inference of the later into meaningful figures.
 
 In order to reproduce this analysis, you would require a two data files:
 
