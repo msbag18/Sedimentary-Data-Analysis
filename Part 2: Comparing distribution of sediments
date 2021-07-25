@@ -1,120 +1,15 @@
----
-title: "Sedimentary Data Analysis "
-subtitle: "Part 1- Erosion Rate Modelling"
-author: "18096876"
-date: "09/03/2021"
-output: 
-  html_document: 
-    number_sections: true
----
-# Section 1: Importing libraries and data from my zip file
-
-```{r}
-library(geostats)
-library(MASS)
-
-kappa <- read.csv(file = "kappa.csv" , header = TRUE)
-locations <- read.csv(file = "locations.csv", header = TRUE)
-```
-
-# Section 2: Visualising the data 
-## Subsection 1: Probability distribution of kappa for first four samples
-```{r}
-i <- 1
-n = 4 #Number of sample that are to be visualized starting with sample 1
-x = n + 1 
-
-par(mfrow = c(2,2),mar=c(4,4,2,1))
-while (i < x) { 
-  m <- mean(kappa[,i])#mean
-  s <- sdsamp1<- sd(kappa[,i])
-  probsamp <- dnorm(0:200,m,s) #As data is continuous, probability distribution of erodibility is found using normal distribution
-  plot(probsamp, main = c("Sample",i), xlab = "Erodibility (mm/[yr.ha])",ylab = "Probability", type = "l")
-  rug(kappa[,i])
-  i = i +1
-}
-```
-
-## Subsection 2: Boxplot
-```{r}
-par(mfrow = c(1,1),mar=c(4,4,1,1))
-sampname <- c(1:89)
-names(kappa)<- sampname
-boxplot(kappa,xlab="Sample", ylab ="Erodibility (mm/[yr.ha])", horizontal = FALSE) #Individual boxplots for each sample as they are at different locations
-
-#In case my understanding was wrong and all data were to be plotted together
-updatedkappa <- c(kappa[1,],kappa[2,],kappa[3,],kappa[4,],kappa[5,],kappa[6,],kappa[7,],kappa[8,],kappa[9,],kappa[10,],kappa[11,],kappa[12,],kappa[13,],kappa[14,],kappa[15,],kappa[16,],kappa[17,],kappa[18,],kappa[19,],kappa[20,])
-
-par(mfrow = c(1,1),mar=c(4,4,1,1))
-boxplot(updatedkappa,xlab="Sample", ylab ="Erodibility (mm/[yr.ha])", horizontal = FALSE) 
-
-```
-
-# Section 3: Mean and standard error of Erodibility (kappa)
-```{r}
-m = ncol(kappa)
-y = m + 1
-Mean <- matrix(data = NA, nrow = ncol(kappa), ncol = 1)
-SE <- matrix(data = NA, nrow = ncol(kappa), ncol = 1) #Standard error in this case would be equal to standard deviation
-
-j <- 1
-while (j < y) {
-  Mean[j] = mean(kappa[,j])
-  SE[j] <- sd(kappa[,j])
-  j = j +1
-}
-```
-
-# Section 4: Estimating erosion rate
-```{r}
-S <- locations[,4]
-t <- locations[,5]
-ER <- matrix(data = NA, nrow = ncol(kappa), ncol = 1)
-k <- 1 
-while (k < y) {
-  ER[k] <- (Mean[k]*S[k])/t[k]
-  k = k +1
-}
-```
-
-# Section 5: Propagating the uncertainty
-```{r}
-UE =  SE/Mean #Uncertainty in erodibility
-US <-  0.1 #Uncertainty in slope
-UT <- 0 #Assuming there is no uncertainty in calculating trees
-sER = sqrt((UE)^2 + (US)^2 + (UT)^2) * ER
-```
-
-# Section 6: Scatter Plot 
-```{r}
-par(mfrow = c(1,1),mar=c(4,4,1,1))
-plot(ER,sER, xlab = "Erosion rate (mm/yr)", ylab = "Uncertainty in erosion rate (mm/yr)", main = "Scatter plot of uncertainty of erosion rate against erosion rate")
-```
-
-# Section 7: Colour Plot 
-## Subsection 1: Erosion Rate as a function of location
-```{r}
-NS <- locations[,3]
-EW <- locations[,2]
-colourplot(X = EW, Y = NS, Z = ER, xlab= "Eastings", ylab= "Northings", main = "Erosion rate as a function location")
-```
----
-subtitle: "Part 1- Erosion Rate Modelling"
----
-
 # Section 1: Comparing statistical difference from distributions using Kolmogorov-Smirnov test
-```{r}
+````{r}
 #Choosing location of two data 
 L1 <- 1
 L2 <- 10
 
 #Visualizing the two distribution 
-qqplot(x=kappa[,L1], y=kappa[,L2], xlab = c("Sample", L1), ylab =c("Sample",L2))
-qqline(kappa[,L1], kappa[,L2])
+qqplot(x=erosion_rates[,L1], y=erosion_rates[,L2], xlab = c("Sample", L1), ylab =c("Sample",L2))
 abline(0,1)
 
 #Quantitatively comparing the two samples 
-test1 <- ks.test(x=kappa[,L1], y=kappa[,L2])
+test1 <- ks.test(x=erosion_rates[,L1], y=erosion_rates[,L2])
 ```
 
 # Section 2: Comparing distribution to normal distribution 
@@ -122,7 +17,7 @@ test1 <- ks.test(x=kappa[,L1], y=kappa[,L2])
 #Normalising K values in the first sample
 #For k values in first sample
 S <- 1 #sample number chosen
-K <- (kappa[,S] - Mean[S])/sd(kappa[,S])
+K <- (erosion_rates[,S] - Mean[S])/sd(erosion_rates[,S])
 
 #Visualising normalised data
 qqnorm(K)
@@ -135,12 +30,12 @@ test2 <- ks.test(K, "pnorm")
 # Section 3: Comparing distribution with a logarithmic normal distribution 
 ```{r}
 #Log conversion
-logkappa <- log(kappa[,S])
+log_erosion_rates <- log(erosion_rates[,S])
 
 #Normalising 
-mlog <- mean(logkappa)
-slog <- sd(logkappa)
-logK <- (logkappa - mlog)/slog
+mlog <- mean(log_erosion_rates)
+slog <- sd(log_erosion_rates)
+logK <- (log_erosion_rates - mlog)/slog
 
 #Visualizing normalised data
 qqnorm(logK)
@@ -155,7 +50,7 @@ test3 <- ks.test(logK, "pnorm")
 #Estimated erosion rate is already calculated as E
 
 #Measured erosion rates
-mER <- locations$erosion[1:89]
+mER <- locations$erosion[1:ncol(erosion_rates)]
 
 #Plotting
 plot(mER, ER, xlab = "Measured erosion rate (mm/yr)", ylab = "Estimated erosion rate (mm/yr)", main = "Comparing estimated and measured erosion rates at different locations" )
@@ -215,88 +110,4 @@ logyce <- predict(fitlog, newdata=data.frame(logmER=logxce), interval = "confide
 matlines(logxce,logyce, lty=2, col = "black")
 logyced <- predict(fitlog, newdata=data.frame(logmER=logxce), interval = "prediction", level = 0.95)
 matlines(logxce,logyced, lty=3, col = "black")
-```
----
-Part 3: Qualitative visualisation of sedimentary data
----
-# Section 1: Visualising sedimentary data 
-## Subsection 1: In a ternary diagram 
-```{r}
-#Creating a matrix with three chosen sediments types 
-ternary_mat <- locations[,c('clay','silt','sand')]
-
-#Generating the ternary diagram
-ternary(ternary_mat, labels=c("Clay", "Silt", "Sand"),type='p', col='grey')
-```
-
-## Subsection 2: Through a biplot
-```{r}
-#Principle Component Analysis
-components <- clr(ternary_mat) #making the data easier to read
-pc <- prcomp(components) #principal component analysis of the data
-
-#Generating biplot
-biplot(pc, col=c("grey", "black"), xlim=c(-0.2,0.25)) #change limits slightly to allow clay to be viewed on the biplot
-```
-
-# Section 2: Interpolating Erosion Rates
-```{r}
-#Parameters for semivariogram 
-X <- locations$E #east west axis
-Y <- locations$N #north south axis
-Z <- locations$erosion #value for erosion
-
-#Finding the right semivariogram
-svm_exp <- semivariogram(x=X,y=Y,z=Z,model='exponential', main='Exponential Semivariogram') #Fitting exponential model
-svm_gau <- semivariogram(x=X,y=Y,z=Z,model='gaussian', main='Gaussian Semivariogram') #Fitting Gaussian model
-svm_sph <- semivariogram(x=X,y=Y,z=Z,model='spherical', main='Spherical Semivariogram') #Fitting spherical model
-
-#Gaussian distribution seems to subjectively fit the line, therefore, svm_gau is used for interpolation
-xi <- seq(from=min(X),to=max(X),length.out=50)
-yi <- seq(from=min(Y),to=max(Y),length.out=50)
-zi <- kriging(x=X,y=Y,z=Z,svm=svm_gau,xi=xi,yi=yi,grid=TRUE)
-colourplot(x=xi,y=yi,z=zi,key.title=title('Erosion rates (mm/yr)'), xlab='Eastings', ylab='Northings', main ='Interpolation of erosion rates' )
-
-#Uncertainties with interpolation 
-zi_error <- kriging(x=X,y=Y,z=Z,svm=svm_gau,xi=xi,yi=yi,grid=TRUE,err=TRUE)
-colourplot(x=xi,y=yi,z=sqrt(zi_error),key.title=title('s[Erosion rate]/Erosion Rate'), xlab='Eastings', ylab='Northings', main = 'Interpolation Uncertainty')
-```
-
-# Section 3: Evaluating the model 
-## Subsection 1: Dividing samples into two groups
-```{r}
-biplot(pc, col=c("grey", "black"), xlim=c(-0.2,0.25))
-```
-Bi-plot shows anti-correlation between clay and sand and silt which makes it more logically to separate them into two groups based on the latter, that is using PC1 component of pc (which has already undergone principal component analysis). As i did not quite understand what the hint of using pc meant in the question, this part might be quite incorrect, but i decided to seperate the two groups at PC1 = 0 (which is where I visually see the separation)
-
-```{r}
-#defining group
-PC1_components <- pc$x #extracting the pc components
-grouping <- PC1_components[,1] #extracting the PC1 component for separation
-
-#Initializing the groups as I could not find another way to do it
-group1 <- locations[2,]
-group2 <- locations[1,]
-
-n <- nrow(locations)
-for (i in 1:n){
-  if (grouping[i] > 0){
-    group1 <- rbind(group1,locations[i,])
-  }
-  else {
-    group2 <- rbind(group2,locations[i,])
-  }
-}
-```
-
-# Section 4:Illustrating the two groups on the interpolated model 
-```{r}
-#Gaussian distribution seems to subjectively fit the line, therefore, svm_gau is used for interpolation
-xi <- seq(from=min(X),to=max(X),length.out=50)
-yi <- seq(from=min(Y),to=max(Y),length.out=50)
-zi <- kriging(x=X,y=Y,z=Z,svm=svm_gau,xi=xi,yi=yi,grid=TRUE)
-
-colourplot(x=xi,y=yi,z=zi,key.title=title('Measured erosion rates (mm/yr)'), xlab='Eastings', ylab='Northings', extra={points(x=group1$E,y=group1$N ,pch=21,bg='white')}, main = "Group 1 on the Interpolated Plot")
-
-colourplot(x=xi,y=yi,z=zi,key.title=title('Measured erosion rates (mm/yr)'), xlab='Eastings', ylab='Northings', extra={points(x=group2$E,y=group2$N ,pch=21,bg='grey')}, main ="Group 2 on the Interpolated Plot")
 ```
