@@ -1,5 +1,5 @@
 # Sedimentary-Data-Analysis
-The code attached in R Markdown files aim to analyse sedimentary data from n different locations. This is done in three steps as has been seperated in the RMarkdown file into subtitled sections. The three steps were as follows:
+The code attached in the R Markdown file aims to analyse sedimentary data from n different locations. This is done in three steps as has been seperated in the RMarkdown file into subtitled sections. The three steps were as follows:
 
 1. Initialising the raw data files with quick summary statistics;
 2. Understanding part 1 and classifying the latter into its corresponding data distribution type for more accurate analysis;
